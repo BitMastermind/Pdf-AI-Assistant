@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   HiOutlineSparkles, 
@@ -16,16 +15,28 @@ import FlashcardsPanel from './FlashcardsPanel';
 import NotesPanel from './NotesPanel';
 
 const tabs = [
-  { id: 'chat', label: 'Chat', icon: HiOutlineSparkles, color: 'accent-violet' },
-  { id: 'summary', label: 'Summary', icon: HiOutlineDocumentText, color: 'accent-mint' },
-  { id: 'keywords', label: 'Keywords', icon: HiOutlineTag, color: 'accent-cyan' },
-  { id: 'flashcards', label: 'Flashcards', icon: HiOutlineLightBulb, color: 'accent-gold' },
-  { id: 'notes', label: 'Notes', icon: HiOutlinePencil, color: 'accent-coral' },
+  { id: 'chat', label: 'Chat', icon: HiOutlineSparkles, accent: '#A855F7' },
+  { id: 'summary', label: 'Summary', icon: HiOutlineDocumentText, accent: '#4ECDC4' },
+  { id: 'keywords', label: 'Keywords', icon: HiOutlineTag, accent: '#22D3EE' },
+  { id: 'flashcards', label: 'Flashcards', icon: HiOutlineLightBulb, accent: '#FFE66D' },
+  { id: 'notes', label: 'Notes', icon: HiOutlinePencil, accent: '#FF6B6B' },
 ];
 
-export default function TabPanel() {
-  const [activeTab, setActiveTab] = useState('chat');
+interface TabPanelProps {
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+}
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const sanitized = hex.replace('#', '');
+  const bigint = parseInt(sanitized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+export default function TabPanel({ activeTab, onTabChange }: TabPanelProps) {
   return (
     <div className="flex-1 flex flex-col h-full glass rounded-2xl overflow-hidden">
       {/* Tab Navigation */}
@@ -37,27 +48,31 @@ export default function TabPanel() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => onTabChange(tab.id)}
               className={`
                 relative flex items-center gap-2 px-4 py-2 rounded-xl
                 transition-all duration-200 text-sm font-medium
                 ${isActive 
-                  ? 'text-white' 
-                  : 'text-white/50 hover:text-white/70 hover:bg-white/5'
+                  ? 'text-slate-900 font-semibold' 
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                 }
               `}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className={`absolute inset-0 bg-${tab.color}/20 rounded-xl border border-${tab.color}/30`}
+                  className="absolute inset-0 rounded-xl border"
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   style={{
-                    background: `rgba(var(--${tab.color}), 0.2)`,
+                    background: hexToRgba(tab.accent, 0.15),
+                    borderColor: hexToRgba(tab.accent, 0.4),
                   }}
                 />
               )}
-              <Icon className={`w-4 h-4 relative z-10 ${isActive ? `text-${tab.color}` : ''}`} />
+              <Icon
+                className="w-4 h-4 relative z-10"
+                style={{ color: isActive ? tab.accent : '#94a3b8' }}
+              />
               <span className="relative z-10 hidden sm:inline">{tab.label}</span>
             </button>
           );

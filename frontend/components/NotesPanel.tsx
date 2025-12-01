@@ -96,13 +96,13 @@ export default function NotesPanel() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="p-4 rounded-2xl bg-white/5 mb-4 inline-block">
+          <div className="p-4 rounded-2xl bg-white shadow-inner mb-4 inline-block">
             <HiOutlinePencil className="w-12 h-12 text-accent-coral" />
           </div>
-          <h3 className="text-xl font-display font-semibold text-white mb-2">
+          <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
             Notes
           </h3>
-          <p className="text-white/50">Select a document to take notes</p>
+          <p className="text-slate-500">Select a document to take notes</p>
         </div>
       </div>
     );
@@ -111,21 +111,21 @@ export default function NotesPanel() {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-display font-semibold text-white flex items-center gap-2">
+            <h3 className="font-display font-semibold text-slate-900 flex items-center gap-2">
               <HiOutlinePencil className="w-5 h-5 text-accent-coral" />
               Notes
             </h3>
-            <p className="text-xs text-white/40 mt-1 truncate">
+            <p className="text-xs text-slate-500 mt-1 truncate">
               {currentDocument.filename}
             </p>
           </div>
           
           <button
             onClick={() => setIsCreating(true)}
-            className="p-2 rounded-lg glass hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg glass hover:bg-slate-100 transition-colors"
             title="Add note"
           >
             <HiOutlinePlus className="w-5 h-5 text-accent-coral" />
@@ -149,14 +149,14 @@ export default function NotesPanel() {
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Note title..."
-                className="w-full bg-transparent text-white font-medium mb-3 outline-none placeholder:text-white/30"
+                className="w-full bg-transparent text-slate-900 font-medium mb-3 outline-none placeholder:text-slate-400"
               />
               <textarea
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 placeholder="Write your note..."
                 rows={4}
-                className="w-full bg-transparent text-white/80 resize-none outline-none placeholder:text-white/30"
+                className="w-full bg-transparent text-slate-700 resize-none outline-none placeholder:text-slate-400"
                 autoFocus
               />
               <div className="flex justify-end gap-2 mt-4">
@@ -166,7 +166,7 @@ export default function NotesPanel() {
                     setNewTitle('');
                     setNewContent('');
                   }}
-                  className="p-2 rounded-lg hover:bg-white/10 text-white/60 transition-colors"
+                  className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
                 >
                   <HiOutlineX className="w-5 h-5" />
                 </button>
@@ -189,7 +189,7 @@ export default function NotesPanel() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-12"
           >
-            <p className="text-white/40 mb-4">No notes yet</p>
+            <p className="text-slate-500 mb-4">No notes yet</p>
             <button
               onClick={() => setIsCreating(true)}
               className="btn-primary inline-flex items-center gap-2"
@@ -215,19 +215,19 @@ export default function NotesPanel() {
                     type="text"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-transparent text-white font-medium mb-3 outline-none"
+                    className="w-full bg-transparent text-slate-900 font-medium mb-3 outline-none"
                   />
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     rows={4}
-                    className="w-full bg-transparent text-white/80 resize-none outline-none"
+                    className="w-full bg-transparent text-slate-700 resize-none outline-none"
                     autoFocus
                   />
                   <div className="flex justify-end gap-2 mt-4">
                     <button
                       onClick={() => setIsEditing(null)}
-                      className="p-2 rounded-lg hover:bg-white/10 text-white/60 transition-colors"
+                      className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
                     >
                       <HiOutlineX className="w-5 h-5" />
                     </button>
@@ -242,25 +242,25 @@ export default function NotesPanel() {
               ) : (
                 <>
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-white">{note.title}</h4>
+                    <h4 className="font-medium text-slate-900">{note.title}</h4>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => startEditing(note)}
-                        className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
                       >
                         <HiOutlinePencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteNote(note.id)}
-                        className="p-1.5 rounded-lg hover:bg-accent-coral/20 text-white/60 hover:text-accent-coral transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-accent-coral/10 text-slate-500 hover:text-accent-coral transition-colors"
                       >
                         <HiOutlineTrash className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <p className="text-white/70 whitespace-pre-wrap">{note.content}</p>
+                  <p className="text-slate-700 whitespace-pre-wrap">{note.content}</p>
                   {note.updated_at && (
-                    <p className="text-xs text-white/30 mt-3">
+                    <p className="text-xs text-slate-400 mt-3">
                       Updated {new Date(note.updated_at).toLocaleDateString()}
                     </p>
                   )}

@@ -3,28 +3,31 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from app.config import get_settings
 from app.vector_store import get_vector_store, search_similar
-from typing import List, Dict
+from typing import List, Dict, AsyncGenerator
 import json
 import re
 
 settings = get_settings()
 
 
-def get_llm():
+def get_llm(streaming: bool = False):
     """Get LLM based on configured AI provider"""
     if settings.ai_provider == "gemini" and settings.google_api_key:
         return ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",  # Working model!
+            model="gemini-2.0-flash",
             google_api_key=settings.google_api_key,
-            temperature=0.3
+            temperature=0.3,
+            streaming=streaming
         )
     else:
         return ChatOpenAI(
             model="gpt-3.5-turbo",
             openai_api_key=settings.openai_api_key,
-            temperature=0.3
+            temperature=0.3,
+            streaming=streaming
         )
 
 
@@ -207,4 +210,44 @@ Assistant:""",
         "question": last_message
     })
     return result
+
+
+async def chat_with_document_stream(doc_id: str, messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
+    """Stream a conversation response about the document"""
+    last_message = messages[-1]["content"] if messages else ""
+    
+    context_chunks = search_similar(doc_id, last_message, k=5)
+    context = "\n\n".join(context_chunks)
+    
+    llm = get_llm(streaming=True)
+    
+    history = ""
+    for msg in messages[:-1]:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        history += f"{role}: {msg['content']}\n"
+    
+    prompt = PromptTemplate(
+        template="""You are a helpful assistant answering questions about a document.
+Use the following context from the document to answer the user's question.
+If the answer isn't in the context, say so but try to be helpful.
+
+Document Context:
+{context}
+
+Conversation History:
+{history}
+
+User: {question}
+Assistant:""",
+        input_variables=["context", "history", "question"]
+    )
+    
+    chain = prompt | llm | StrOutputParser()
+    
+    async for chunk in chain.astream({
+        "context": context,
+        "history": history,
+        "question": last_message
+    }):
+        yield chunk
 

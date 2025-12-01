@@ -59,11 +59,11 @@ export default function FileUpload() {
         {...getRootProps()}
         className={`
           relative overflow-hidden cursor-pointer
-          border-2 border-dashed rounded-2xl p-12
+          border-2 border-dashed rounded-2xl p-12 bg-white/80
           transition-all duration-300 ease-out
           ${isDragActive 
             ? 'border-accent-violet bg-accent-violet/10 scale-[1.02]' 
-            : 'border-white/20 hover:border-accent-cyan/50 hover:bg-white/5'
+            : 'border-slate-200 hover:border-accent-cyan/60 hover:bg-slate-50'
           }
           ${isUploading ? 'pointer-events-none opacity-60' : ''}
         `}
@@ -90,8 +90,8 @@ export default function FileUpload() {
                   <div className="w-16 h-16 border-4 border-accent-violet/30 rounded-full" />
                   <div className="absolute inset-0 w-16 h-16 border-4 border-t-accent-violet rounded-full animate-spin" />
                 </div>
-                <p className="text-lg font-medium text-white/80">Processing your document...</p>
-                <p className="text-sm text-white/50">Extracting text and creating embeddings</p>
+                <p className="text-lg font-medium text-slate-900">Processing your document...</p>
+                <p className="text-sm text-slate-500">Extracting text and creating embeddings</p>
               </motion.div>
             ) : (
               <motion.div
@@ -114,17 +114,17 @@ export default function FileUpload() {
                 </motion.div>
 
                 <div className="text-center">
-                  <p className="text-xl font-semibold text-white">
+                  <p className="text-xl font-semibold text-slate-900">
                     {isDragActive ? 'Drop your PDF here' : 'Upload a PDF Document'}
                   </p>
-                  <p className="mt-2 text-sm text-white/50">
+                  <p className="mt-2 text-sm text-slate-500">
                     Drag & drop or click to browse • Max 10MB
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
                   <span className="w-2 h-2 rounded-full bg-accent-mint animate-pulse" />
-                  <span className="text-xs text-white/60">AI-powered analysis ready</span>
+                  <span className="text-xs text-slate-600">AI-powered analysis ready</span>
                 </div>
               </motion.div>
             )}

@@ -7,8 +7,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a1f;
-  --foreground: #e0e8ff;
+  --background: #f6f8fb;
+  --foreground: #0f172a;
 }
 
 * {
@@ -27,7 +27,8 @@ body {
 
 body {
   font-family: 'Outfit', system-ui, sans-serif;
-  background: linear-gradient(135deg, #0a0a1f 0%, #0f0f2d 50%, #0a0a1f 100%);
+  background: linear-gradient(135deg, #fdf7ff 0%, #eff5ff 50%, #f7fbff 100%);
+  color: var(--foreground);
   min-height: 100vh;
 }
 
@@ -38,7 +39,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(99, 112, 241, 0.1);
+  background: rgba(15, 23, 42, 0.08);
   border-radius: 4px;
 }
 
@@ -53,14 +54,15 @@ body {
 
 /* Glass morphism */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(99, 112, 241, 0.3);
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(99, 112, 241, 0.35);
 }
 
 /* Gradient text */
@@ -86,16 +88,16 @@ body {
 
 /* Button styles */
 .btn-primary {
-  @apply px-6 py-3 bg-gradient-to-r from-midnight-600 to-accent-violet rounded-xl font-medium;
-  @apply hover:from-midnight-500 hover:to-purple-500 transition-all duration-300;
-  @apply shadow-lg shadow-midnight-600/25 hover:shadow-xl hover:shadow-accent-violet/30;
+  @apply px-6 py-3 bg-gradient-to-r from-accent-violet to-accent-cyan rounded-xl font-medium text-white;
+  @apply hover:opacity-90 transition-all duration-300;
+  @apply shadow-lg shadow-accent-violet/30 hover:shadow-xl hover:shadow-accent-cyan/40;
   @apply active:scale-[0.98];
 }
 
 .btn-secondary {
-  @apply px-6 py-3 glass rounded-xl font-medium;
-  @apply hover:bg-white/10 transition-all duration-300;
-  @apply border border-white/10 hover:border-accent-violet/30;
+  @apply px-6 py-3 rounded-xl font-medium bg-white text-slate-700;
+  @apply border border-slate-200 hover:border-accent-violet/40;
+  @apply hover:bg-slate-50 transition-all duration-300;
 }
 
 /* Card styles */
@@ -111,15 +113,16 @@ body {
 
 /* Input styles */
 .input-field {
-  @apply w-full px-4 py-3 glass rounded-xl;
-  @apply border border-white/10 focus:border-accent-violet/50;
+  @apply w-full px-4 py-3 rounded-xl bg-white;
+  @apply border border-slate-200 focus:border-accent-violet/60;
   @apply outline-none transition-all duration-300;
-  @apply placeholder:text-white/30;
-  @apply text-white bg-white/5;
+  @apply placeholder:text-slate-400;
+  @apply text-slate-900;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .input-field:focus {
-  @apply ring-2 ring-accent-violet/20;
+  @apply ring-4 ring-accent-violet/10;
 }
 
 /* Animation utilities */
@@ -132,22 +135,22 @@ body {
 /* Mesh background */
 .mesh-bg {
   background-image: 
-    radial-gradient(at 40% 20%, rgba(99, 112, 241, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(34, 211, 238, 0.1) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(255, 107, 107, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(78, 205, 196, 0.1) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, rgba(99, 112, 241, 0.25) 0px, transparent 45%),
+    radial-gradient(at 80% 0%, rgba(168, 85, 247, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(34, 211, 238, 0.18) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgba(255, 107, 107, 0.15) 0px, transparent 55%),
+    radial-gradient(at 0% 100%, rgba(78, 205, 196, 0.18) 0px, transparent 55%);
 }
 
 /* Chat messages */
 .chat-bubble-user {
-  @apply bg-gradient-to-r from-midnight-600 to-accent-violet;
-  @apply rounded-2xl rounded-br-md;
+  @apply bg-gradient-to-r from-accent-violet to-accent-cyan text-white;
+  @apply rounded-2xl rounded-br-md shadow-md;
 }
 
 .chat-bubble-assistant {
-  @apply glass;
-  @apply rounded-2xl rounded-bl-md;
+  @apply bg-white border border-slate-200 text-slate-800;
+  @apply rounded-2xl rounded-bl-md shadow-sm;
 }
 
 /* Flashcard flip */
@@ -176,7 +179,7 @@ body {
 
 /* Loading skeleton */
 .skeleton {
-  @apply bg-gradient-to-r from-white/5 via-white/10 to-white/5;
+  @apply bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100;
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -188,8 +191,7 @@ body {
 
 /* Keyword tag */
 .keyword-tag {
-  @apply px-3 py-1.5 glass rounded-full text-sm font-medium;
-  @apply border border-accent-cyan/30 text-accent-cyan;
-  @apply hover:bg-accent-cyan/10 transition-all duration-300;
+  @apply px-3 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700;
+  @apply border border-slate-200 hover:border-accent-cyan/40 hover:text-accent-cyan transition-all duration-300;
 }
 

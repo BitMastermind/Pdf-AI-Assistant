@@ -37,13 +37,13 @@ export default function KeywordsPanel() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="p-4 rounded-2xl bg-white/5 mb-4 inline-block">
+          <div className="p-4 rounded-2xl bg-white shadow-inner mb-4 inline-block">
             <HiOutlineTag className="w-12 h-12 text-accent-cyan" />
           </div>
-          <h3 className="text-xl font-display font-semibold text-white mb-2">
+          <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
             Keywords & Topics
           </h3>
-          <p className="text-white/50">Select a document to extract keywords</p>
+          <p className="text-slate-500">Select a document to extract keywords</p>
         </div>
       </div>
     );
@@ -52,12 +52,12 @@ export default function KeywordsPanel() {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <h3 className="font-display font-semibold text-white flex items-center gap-2">
+      <div className="p-4 border-b border-slate-200">
+        <h3 className="font-display font-semibold text-slate-900 flex items-center gap-2">
           <HiOutlineTag className="w-5 h-5 text-accent-cyan" />
           Keywords
         </h3>
-        <p className="text-xs text-white/40 mt-1 truncate">
+        <p className="text-xs text-slate-500 mt-1 truncate">
           {currentDocument.filename}
         </p>
       </div>
@@ -71,7 +71,7 @@ export default function KeywordsPanel() {
             className="text-center py-12"
           >
             <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-2">
+              <label className="block text-sm text-slate-600 mb-2">
                 Number of Keywords
               </label>
               <div className="flex items-center justify-center gap-4">
@@ -84,7 +84,7 @@ export default function KeywordsPanel() {
                   onChange={(e) => setNumKeywords(Number(e.target.value))}
                   className="w-48 accent-accent-cyan"
                 />
-                <span className="text-white/80 font-mono w-8">{numKeywords}</span>
+                <span className="text-slate-700 font-mono w-8">{numKeywords}</span>
               </div>
             </div>
             

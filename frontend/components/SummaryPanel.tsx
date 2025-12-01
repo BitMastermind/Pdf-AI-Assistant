@@ -57,13 +57,13 @@ export default function SummaryPanel() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="p-4 rounded-2xl bg-white/5 mb-4 inline-block">
+          <div className="p-4 rounded-2xl bg-white shadow-inner mb-4 inline-block">
             <HiOutlineDocumentText className="w-12 h-12 text-accent-mint" />
           </div>
-          <h3 className="text-xl font-display font-semibold text-white mb-2">
+          <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
             Document Summary
           </h3>
-          <p className="text-white/50">Select a document to generate a summary</p>
+          <p className="text-slate-500">Select a document to generate a summary</p>
         </div>
       </div>
     );
@@ -72,14 +72,14 @@ export default function SummaryPanel() {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-display font-semibold text-white flex items-center gap-2">
+            <h3 className="font-display font-semibold text-slate-900 flex items-center gap-2">
               <HiOutlineDocumentText className="w-5 h-5 text-accent-mint" />
               Summary
             </h3>
-            <p className="text-xs text-white/40 mt-1 truncate">
+            <p className="text-xs text-slate-500 mt-1 truncate">
               {currentDocument.filename}
             </p>
           </div>
@@ -87,7 +87,7 @@ export default function SummaryPanel() {
           {summary && (
             <button
               onClick={handleDownload}
-              className="p-2 rounded-lg glass hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg glass hover:bg-slate-100 transition-colors"
               title="Download summary"
             >
               <HiOutlineDownload className="w-5 h-5 text-accent-mint" />
@@ -105,7 +105,7 @@ export default function SummaryPanel() {
             className="text-center py-12"
           >
             <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-2">
+              <label className="block text-sm text-slate-600 mb-2">
                 Summary Length (words)
               </label>
               <div className="flex items-center justify-center gap-4">
@@ -118,7 +118,7 @@ export default function SummaryPanel() {
                   onChange={(e) => setSummaryLength(Number(e.target.value))}
                   className="w-48 accent-accent-mint"
                 />
-                <span className="text-white/80 font-mono w-16">{summaryLength}</span>
+                <span className="text-slate-700 font-mono w-16">{summaryLength}</span>
               </div>
             </div>
             
@@ -151,30 +151,30 @@ export default function SummaryPanel() {
             className="space-y-4"
           >
             <div className="card">
-              <div className="prose prose-invert prose-sm max-w-none">
+              <div className="prose prose-slate prose-sm max-w-none">
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
-                      <p className="text-white/80 leading-relaxed mb-4 last:mb-0">
+                      <p className="text-slate-700 leading-relaxed mb-4 last:mb-0">
                         {children}
                       </p>
                     ),
                     h1: ({ children }) => (
-                      <h1 className="text-xl font-display font-bold text-white mb-3">
+                      <h1 className="text-xl font-display font-bold text-slate-900 mb-3">
                         {children}
                       </h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-lg font-display font-semibold text-white mb-2">
+                      <h2 className="text-lg font-display font-semibold text-slate-900 mb-2">
                         {children}
                       </h2>
                     ),
                     ul: ({ children }) => (
-                      <ul className="list-disc ml-4 space-y-1 text-white/80">
+                      <ul className="list-disc ml-4 space-y-1 text-slate-700">
                         {children}
                       </ul>
                     ),
-                    li: ({ children }) => <li className="text-white/80">{children}</li>,
+                    li: ({ children }) => <li className="text-slate-700">{children}</li>,
                   }}
                 >
                   {summary}

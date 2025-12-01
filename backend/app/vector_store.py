@@ -18,16 +18,20 @@ _embeddings_model = None
 
 
 def get_embeddings():
-    """Get embeddings - using free local Sentence Transformers to avoid API quotas"""
+    """Get embeddings - using BGE model for superior retrieval quality"""
     global _embeddings_model
     
     if _embeddings_model is None:
-        # Use a free, fast, and accurate embedding model
-        # all-MiniLM-L6-v2 is small, fast, and works well for most use cases
+        # BGE (BAAI General Embedding) models are state-of-the-art for retrieval
+        # bge-base-en-v1.5 offers excellent quality with reasonable speed
+        # For even better quality, use "BAAI/bge-large-en-v1.5" (slower but more accurate)
         _embeddings_model = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_name="BAAI/bge-base-en-v1.5",
             model_kwargs={'device': 'cpu'},  # Use CPU (change to 'cuda' if you have GPU)
-            encode_kwargs={'normalize_embeddings': True}
+            encode_kwargs={
+                'normalize_embeddings': True,
+                'batch_size': 32  # Process in batches for efficiency
+            }
         )
     
     return _embeddings_model

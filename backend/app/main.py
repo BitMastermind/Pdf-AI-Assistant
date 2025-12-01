@@ -1,8 +1,11 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Path
+from fastapi import FastAPI, File, UploadFile, HTTPException, Path, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import uuid
 from typing import Dict
+import traceback
+import json
 
 from app.config import get_settings
 from app.models import (
@@ -15,7 +18,7 @@ from app.pdf_processor import extract_text_from_pdf, get_pdf_info
 from app.vector_store import store_document, delete_document_vectors
 from app.ai_service import (
     ask_question, generate_summary, extract_keywords,
-    generate_flashcards, chat_with_document
+    generate_flashcards, chat_with_document, chat_with_document_stream
 )
 from app.database import (
     save_document, get_documents, delete_document,
@@ -31,14 +34,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware - must be added before other middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+# Global exception handlers to ensure CORS headers are always sent
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:3000",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    print(f"Unhandled exception: {exc}")
+    print(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "error": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:3000",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 # In-memory storage for document text (for demo purposes)
 document_texts: Dict[str, str] = {}
@@ -100,7 +129,13 @@ async def upload_document(file: UploadFile = File(...)):
 @app.get("/api/documents")
 async def list_documents():
     """List all uploaded documents"""
-    return await get_documents()
+    try:
+        documents = await get_documents()
+        return documents
+    except Exception as e:
+        print(f"Error fetching documents: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Failed to fetch documents: {str(e)}")
 
 
 @app.delete("/api/documents/{doc_id}")
@@ -142,6 +177,35 @@ async def chat_about_document(doc_id: str, request: ChatRequest):
         return AnswerResponse(answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/documents/{doc_id}/chat/stream")
+async def chat_about_document_stream(doc_id: str, request: ChatRequest):
+    """Stream a conversation response about the document using Server-Sent Events"""
+    messages = [{"role": m.role, "content": m.content} for m in request.messages]
+    
+    async def generate():
+        try:
+            async for chunk in chat_with_document_stream(doc_id, messages):
+                # Format as SSE
+                data = json.dumps({"chunk": chunk})
+                yield f"data: {data}\n\n"
+            # Send completion signal
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            error_data = json.dumps({"error": str(e)})
+            yield f"data: {error_data}\n\n"
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "http://localhost:3000",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 
 @app.post("/api/documents/{doc_id}/summary", response_model=SummaryResponse)

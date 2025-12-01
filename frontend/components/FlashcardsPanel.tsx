@@ -74,13 +74,13 @@ export default function FlashcardsPanel() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="p-4 rounded-2xl bg-white/5 mb-4 inline-block">
+          <div className="p-4 rounded-2xl bg-white shadow-inner mb-4 inline-block">
             <HiOutlineLightBulb className="w-12 h-12 text-accent-gold" />
           </div>
-          <h3 className="text-xl font-display font-semibold text-white mb-2">
+          <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
             Flashcards
           </h3>
-          <p className="text-white/50">Select a document to create flashcards</p>
+          <p className="text-slate-500">Select a document to create flashcards</p>
         </div>
       </div>
     );
@@ -89,12 +89,12 @@ export default function FlashcardsPanel() {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <h3 className="font-display font-semibold text-white flex items-center gap-2">
+      <div className="p-4 border-b border-slate-200">
+        <h3 className="font-display font-semibold text-slate-900 flex items-center gap-2">
           <HiOutlineLightBulb className="w-5 h-5 text-accent-gold" />
           Flashcards
         </h3>
-        <p className="text-xs text-white/40 mt-1 truncate">
+        <p className="text-xs text-slate-500 mt-1 truncate">
           {currentDocument.filename}
         </p>
       </div>
@@ -108,7 +108,7 @@ export default function FlashcardsPanel() {
             className="text-center py-12"
           >
             <div className="mb-6">
-              <label className="block text-sm text-white/60 mb-2">
+              <label className="block text-sm text-slate-600 mb-2">
                 Number of Cards
               </label>
               <div className="flex items-center justify-center gap-4">
@@ -121,7 +121,7 @@ export default function FlashcardsPanel() {
                   onChange={(e) => setNumCards(Number(e.target.value))}
                   className="w-48 accent-accent-gold"
                 />
-                <span className="text-white/80 font-mono w-8">{numCards}</span>
+                <span className="text-slate-700 font-mono w-8">{numCards}</span>
               </div>
             </div>
             
@@ -142,7 +142,7 @@ export default function FlashcardsPanel() {
                 <div className="w-16 h-16 border-4 border-accent-gold/30 rounded-full mx-auto" />
                 <div className="absolute inset-0 w-16 h-16 border-4 border-t-accent-gold rounded-full animate-spin mx-auto" />
               </div>
-              <p className="text-white/60">Generating flashcards...</p>
+              <p className="text-slate-600">Generating flashcards...</p>
             </div>
           </div>
         )}
@@ -154,7 +154,7 @@ export default function FlashcardsPanel() {
             className="space-y-6"
           >
             {/* Card counter */}
-            <div className="text-center text-sm text-white/50">
+            <div className="text-center text-sm text-slate-500">
               Card {currentIndex + 1} of {flashcards.length}
             </div>
 
@@ -165,17 +165,17 @@ export default function FlashcardsPanel() {
             >
               <div className={`flashcard-inner relative h-64 ${isFlipped ? 'flipped' : ''}`}>
                 {/* Front - Question */}
-                <div className="flashcard-front absolute inset-0 card flex flex-col items-center justify-center p-6 bg-gradient-to-br from-accent-gold/10 to-transparent border border-accent-gold/30">
+                <div className="flashcard-front absolute inset-0 card flex flex-col items-center justify-center p-6 bg-white border border-accent-gold/30">
                   <span className="text-xs text-accent-gold mb-4 uppercase tracking-wider">Question</span>
-                  <p className="text-lg text-white text-center">{currentCard.question}</p>
-                  <span className="absolute bottom-4 text-xs text-white/30">Click to flip</span>
+                  <p className="text-lg text-slate-900 text-center">{currentCard.question}</p>
+                  <span className="absolute bottom-4 text-xs text-slate-400">Click to flip</span>
                 </div>
 
                 {/* Back - Answer */}
-                <div className="flashcard-back absolute inset-0 card flex flex-col items-center justify-center p-6 bg-gradient-to-br from-accent-mint/10 to-transparent border border-accent-mint/30">
+                <div className="flashcard-back absolute inset-0 card flex flex-col items-center justify-center p-6 bg-white border border-accent-mint/30">
                   <span className="text-xs text-accent-mint mb-4 uppercase tracking-wider">Answer</span>
-                  <p className="text-lg text-white text-center">{currentCard.answer}</p>
-                  <span className="absolute bottom-4 text-xs text-white/30">Click to flip</span>
+                  <p className="text-lg text-slate-900 text-center">{currentCard.answer}</p>
+                  <span className="absolute bottom-4 text-xs text-slate-400">Click to flip</span>
                 </div>
               </div>
             </div>
@@ -184,23 +184,23 @@ export default function FlashcardsPanel() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={handlePrevious}
-                className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
+                className="p-3 rounded-full glass hover:bg-slate-100 transition-colors"
               >
-                <HiOutlineChevronLeft className="w-6 h-6 text-white" />
+                <HiOutlineChevronLeft className="w-6 h-6 text-slate-700" />
               </button>
 
               <button
                 onClick={() => handleDelete(currentCard.id)}
-                className="p-2 rounded-lg glass hover:bg-accent-coral/20 text-white/60 hover:text-accent-coral transition-colors"
+                className="p-2 rounded-lg glass hover:bg-accent-coral/10 text-slate-600 hover:text-accent-coral transition-colors"
               >
                 <HiOutlineTrash className="w-5 h-5" />
               </button>
 
               <button
                 onClick={handleNext}
-                className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
+                className="p-3 rounded-full glass hover:bg-slate-100 transition-colors"
               >
-                <HiOutlineChevronRight className="w-6 h-6 text-white" />
+                <HiOutlineChevronRight className="w-6 h-6 text-slate-700" />
               </button>
             </div>
 
@@ -217,7 +217,7 @@ export default function FlashcardsPanel() {
                     w-2 h-2 rounded-full transition-all
                     ${index === currentIndex 
                       ? 'bg-accent-gold w-4' 
-                      : 'bg-white/20 hover:bg-white/40'
+                      : 'bg-slate-200 hover:bg-slate-300'
                     }
                   `}
                 />

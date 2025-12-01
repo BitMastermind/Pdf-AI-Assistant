@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 import os
+from pathlib import Path
 
 
 class Settings(BaseSettings):
@@ -23,9 +24,12 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 200
     
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).parent.parent / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False
+    )
 
 
 @lru_cache()
