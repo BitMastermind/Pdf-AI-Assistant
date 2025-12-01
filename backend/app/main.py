@@ -18,7 +18,8 @@ from app.pdf_processor import extract_text_from_pdf, get_pdf_info
 from app.vector_store import store_document, delete_document_vectors
 from app.ai_service import (
     ask_question, generate_summary, extract_keywords,
-    generate_flashcards, chat_with_document, chat_with_document_stream
+    generate_flashcards, chat_with_document, chat_with_document_stream,
+    generate_followup_questions
 )
 from app.database import (
     save_document, get_documents, delete_document,
@@ -206,6 +207,38 @@ async def chat_about_document_stream(doc_id: str, request: ChatRequest):
             "Access-Control-Allow-Credentials": "true",
         }
     )
+
+
+@app.post("/api/documents/{doc_id}/chat/suggestions")
+async def get_chat_suggestions(doc_id: str, request: ChatRequest):
+    """Generate follow-up question suggestions based on the conversation"""
+    try:
+        messages = [{"role": m.role, "content": m.content} for m in request.messages]
+        
+        if len(messages) < 2:
+            return {"suggestions": []}
+        
+        # Get the last user question and assistant answer
+        last_user_msg = None
+        last_assistant_msg = None
+        
+        for msg in reversed(messages):
+            if msg["role"] == "assistant" and not last_assistant_msg:
+                last_assistant_msg = msg["content"]
+            elif msg["role"] == "user" and not last_user_msg:
+                last_user_msg = msg["content"]
+            
+            if last_user_msg and last_assistant_msg:
+                break
+        
+        if not last_user_msg or not last_assistant_msg:
+            return {"suggestions": []}
+        
+        suggestions = await generate_followup_questions(last_user_msg, last_assistant_msg)
+        return {"suggestions": suggestions}
+    except Exception as e:
+        print(f"Error generating suggestions: {e}")
+        return {"suggestions": []}
 
 
 @app.post("/api/documents/{doc_id}/summary", response_model=SummaryResponse)

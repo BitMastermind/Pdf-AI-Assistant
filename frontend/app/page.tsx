@@ -166,18 +166,20 @@ export default function Home() {
               {/* Document Info Bar */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3 px-4 py-3 glass rounded-xl">
-                  <div className="p-2 rounded-lg bg-accent-violet/10">
+                  <div className="p-2 rounded-lg bg-accent-violet/10 flex-shrink-0">
                     <HiOutlineDocumentText className="w-5 h-5 text-accent-violet" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-slate-900 truncate">
                       {currentDocument.filename}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 truncate">
                       {currentDocument.page_count} pages • {currentDocument.chunk_count} chunks processed
                     </p>
                   </div>
-                <FileUpload />
+                  <div className="flex-shrink-0">
+                    <FileUpload />
+                  </div>
                 </div>
 
                 {/* Document Stats */}

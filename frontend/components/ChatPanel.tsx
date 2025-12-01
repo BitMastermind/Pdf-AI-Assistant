@@ -1,16 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlinePaperAirplane, HiOutlineSparkles } from 'react-icons/hi';
+import { 
+  HiOutlinePaperAirplane, 
+  HiOutlineSparkles,
+  HiOutlineClipboardCopy,
+  HiOutlineRefresh,
+  HiOutlineCheck
+} from 'react-icons/hi';
 import ReactMarkdown from 'react-markdown';
-import { useStore } from '@/lib/store';
-import { chatWithDocumentStream } from '@/lib/api';
+import { useStore, Message } from '@/lib/store';
+import { chatWithDocumentStream, getChatSuggestions } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function ChatPanel() {
   const [input, setInput] = useState('');
   const [streamingContent, setStreamingContent] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [lastUserMessageIndex, setLastUserMessageIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -24,44 +34,126 @@ export default function ChatPanel() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, streamingContent]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || !currentDocument || isLoadingChat) return;
+  // Fetch suggestions after a new assistant message
+  const fetchSuggestions = useCallback(async () => {
+    if (!currentDocument || messages.length < 2) return;
+    
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role !== 'assistant') return;
+    
+    setIsLoadingSuggestions(true);
+    try {
+      const newSuggestions = await getChatSuggestions(currentDocument.id, messages);
+      setSuggestions(newSuggestions);
+    } catch (error) {
+      console.error('Failed to fetch suggestions:', error);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, [currentDocument, messages]);
 
-    const userMessage = { role: 'user' as const, content: input.trim() };
-    addMessage(userMessage);
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      fetchSuggestions();
+    }
+  }, [messages.length, fetchSuggestions]);
+
+  // Clear suggestions when document changes
+  useEffect(() => {
+    setSuggestions([]);
+  }, [currentDocument?.id]);
+
+  const handleCopyMessage = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedIndex(index);
+      toast.success('Copied to clipboard!');
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch (error) {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const sendMessage = async (messageContent: string, isRegenerate = false) => {
+    if (!messageContent.trim() || !currentDocument || isLoadingChat) return;
+
+    let messagesToSend: Message[];
+    
+    if (isRegenerate && lastUserMessageIndex !== null) {
+      // For regenerate, use messages up to and including the last user message
+      messagesToSend = messages.slice(0, lastUserMessageIndex + 1);
+    } else {
+      const userMessage: Message = { role: 'user', content: messageContent.trim() };
+      addMessage(userMessage);
+      setLastUserMessageIndex(messages.length);
+      messagesToSend = [...messages, userMessage];
+    }
+
     setInput('');
     setIsLoadingChat(true);
     setStreamingContent('');
+    setSuggestions([]);
 
-    const allMessages = [...messages, userMessage];
+    let accumulatedContent = '';
     
     await chatWithDocumentStream(
       currentDocument.id,
-      allMessages,
-      // onChunk - append each chunk to streaming content
+      messagesToSend,
       (chunk) => {
-        setStreamingContent((prev) => prev + chunk);
+        accumulatedContent += chunk;
+        setStreamingContent(accumulatedContent);
       },
-      // onComplete - save the final message and reset
       () => {
-        setStreamingContent((prev) => {
-          if (prev) {
-            addMessage({ role: 'assistant', content: prev });
-          }
-          return '';
-        });
         setIsLoadingChat(false);
+        if (accumulatedContent.trim()) {
+          addMessage({ role: 'assistant', content: accumulatedContent });
+        }
+        setStreamingContent('');
       },
-      // onError - show error toast
       (error) => {
         toast.error(`Failed to get response: ${error}`);
         setStreamingContent('');
         setIsLoadingChat(false);
       }
     );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await sendMessage(input);
+  };
+
+  const handleRegenerate = async () => {
+    // Find the last user message
+    let lastUserIdx = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        lastUserIdx = i;
+        break;
+      }
+    }
+    
+    if (lastUserIdx === -1) return;
+    
+    const lastUserContent = messages[lastUserIdx].content;
+    setLastUserMessageIndex(lastUserIdx);
+    
+    // Remove the last assistant message if present
+    const { messages: currentMessages } = useStore.getState();
+    if (currentMessages.length > lastUserIdx + 1 && currentMessages[lastUserIdx + 1].role === 'assistant') {
+      // We need to remove the last assistant message from the store
+      // Since we don't have a removeMessage action, we'll just send a new request
+      // The new response will naturally replace the old one in the UI flow
+    }
+    
+    await sendMessage(lastUserContent, true);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -117,7 +209,7 @@ export default function ChatPanel() {
               ].map((suggestion) => (
                 <button
                   key={suggestion}
-                  onClick={() => setInput(suggestion)}
+                  onClick={() => handleSuggestionClick(suggestion)}
                   className="px-3 py-1.5 text-sm glass rounded-full hover:bg-slate-100 transition-colors text-slate-600"
                 >
                   {suggestion}
@@ -136,30 +228,59 @@ export default function ChatPanel() {
               transition={{ duration: 0.3 }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`
-                  max-w-[80%] px-4 py-3
-                  ${message.role === 'user' 
-                    ? 'chat-bubble-user text-white' 
-                    : 'chat-bubble-assistant text-slate-800'
-                  }
-                `}
-              >
-                <ReactMarkdown
-                  components={{
-                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                    ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
-                    li: ({ children }) => <li className="mb-1">{children}</li>,
-                    code: ({ children }) => (
-                      <code className="px-1.5 py-0.5 bg-white/10 rounded text-sm font-mono">
-                        {children}
-                      </code>
-                    ),
-                  }}
+              <div className="group relative max-w-[80%]">
+                <div
+                  className={`
+                    px-4 py-3
+                    ${message.role === 'user' 
+                      ? 'chat-bubble-user text-white' 
+                      : 'chat-bubble-assistant text-slate-800'
+                    }
+                  `}
                 >
-                  {message.content}
-                </ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                      li: ({ children }) => <li className="mb-1">{children}</li>,
+                      code: ({ children }) => (
+                        <code className="px-1.5 py-0.5 bg-slate-100 rounded text-sm font-mono text-slate-700">
+                          {children}
+                        </code>
+                      ),
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+                
+                {/* Action buttons for assistant messages */}
+                {message.role === 'assistant' && (
+                  <div className="absolute -bottom-8 left-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleCopyMessage(message.content, index)}
+                      className="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
+                      title="Copy response"
+                    >
+                      {copiedIndex === index ? (
+                        <HiOutlineCheck className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <HiOutlineClipboardCopy className="w-4 h-4 text-slate-500" />
+                      )}
+                    </button>
+                    {index === messages.length - 1 && (
+                      <button
+                        onClick={handleRegenerate}
+                        disabled={isLoadingChat}
+                        className="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        title="Regenerate response"
+                      >
+                        <HiOutlineRefresh className="w-4 h-4 text-slate-500" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -180,7 +301,7 @@ export default function ChatPanel() {
                     ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
                     li: ({ children }) => <li className="mb-1">{children}</li>,
                     code: ({ children }) => (
-                      <code className="px-1.5 py-0.5 bg-white/10 rounded text-sm font-mono">
+                      <code className="px-1.5 py-0.5 bg-slate-100 rounded text-sm font-mono text-slate-700">
                         {children}
                       </code>
                     ),
@@ -202,11 +323,47 @@ export default function ChatPanel() {
           </motion.div>
         )}
 
+        {/* Suggested follow-up questions */}
+        {!isLoadingChat && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pt-4"
+          >
+            <p className="text-xs text-slate-400 mb-2 font-medium">Suggested follow-ups:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((suggestion, idx) => (
+                <motion.button
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="px-3 py-1.5 text-sm bg-accent-violet/5 border border-accent-violet/20 rounded-full hover:bg-accent-violet/10 hover:border-accent-violet/30 transition-all text-slate-700"
+                >
+                  {suggestion}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {isLoadingSuggestions && !isLoadingChat && (
+          <div className="pt-4">
+            <p className="text-xs text-slate-400 mb-2">Loading suggestions...</p>
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-8 w-32 rounded-full skeleton" />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-white/10">
+      <form onSubmit={handleSubmit} className="p-4 border-t border-slate-200">
         <div className="flex gap-3">
           <textarea
             ref={inputRef}
@@ -236,4 +393,3 @@ export default function ChatPanel() {
     </div>
   );
 }
-

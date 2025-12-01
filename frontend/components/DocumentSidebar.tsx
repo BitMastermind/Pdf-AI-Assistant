@@ -105,13 +105,13 @@ export default function DocumentSidebar() {
 
         <div className="mt-3 space-y-2">
           <div className="relative">
-            <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by filename..."
-              className="input-field pl-9 pr-3 py-2 text-sm placeholder:text-slate-400"
+              className="input-field pl-9 pr-3 py-2 text-sm placeholder:text-slate-400 w-full"
             />
           </div>
 
